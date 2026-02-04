@@ -1,11 +1,46 @@
-dejar int algo = 2*2/2+6/2-1;
-dejar str peda = "hola amigos que pasa pa";
-dejar str nano = "soy un peda";
-dejar int asd = 3*3/3-1;
+dejar int algo = 1;
 
-consola algo;
-consola peda;
-consola nano;
-consola asd;
+
+
+mientras(algo!=10)
+{
+    si (algo == 2)
+    {
+        consola "Printeo el numero 2";
+        consola algo;
+    }
+    ysi (algo == 3)
+    {
+        consola "Printeo el numero 3";
+        consola algo;
+    }
+    sino
+    {
+        consola "Printeo otro";
+        consola algo;
+    }
+    algo = algo+1;
+}
+
+mientras(algo!=20)
+{
+    si (algo == 11)
+    {
+        consola "Printeo el numero 11";
+        consola algo;
+    }
+    ysi (algo == 12)
+    {
+        consola "Printeo el numero 12";
+        consola algo;
+    }
+    sino
+    {
+        consola "Printeo otro";
+        consola algo;
+    }
+    algo = algo+1;
+}
+
 
 devuelva;

@@ -179,4 +179,19 @@ struct blockNode
 
 
 
+struct whileNode
+:ASTNode
+{
+    std::unique_ptr<ASTNode> cond{};
+    std::unique_ptr<ASTNode> block{};
+
+    whileNode(std::unique_ptr<ASTNode> c, std::unique_ptr<ASTNode> b)
+    :cond{std::move(c)},block{std::move(b)}
+    {}
+
+    void accept(Visitor &visitor) override;
+    std::string getVal() override {return "'";}
+
+};
+
 

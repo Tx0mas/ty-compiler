@@ -13,6 +13,7 @@ struct Visitor
     virtual void visit (ifNode &node) = 0;
     virtual void visit (conditionNode &node) = 0;
     virtual void visit (blockNode &node) = 0;
+    virtual void visit (whileNode &node) = 0;
 };
 
 
@@ -78,6 +79,10 @@ struct SemanticAnalysis
     void visit(blockNode &node) override
     {
     }
+    void visit(whileNode &node) override
+    {
+    }
+
 
     std::unordered_map<std::string, varKind> getMap()
     {
@@ -99,7 +104,11 @@ struct Generation
 {
     int ID_PRINT_NUM{1};
     int ID_PRINT_STRING{1};
+    int ID_LABEL{1};
+    int ID_IF{1};
+    int ID_WHILE{1};
 
+    std::vector<int> stackId{};
     std::vector<Types> stackKind{};
     std::vector<std::string> stackDeclaration{};
     std::ofstream out{"./assembly.asm"};
@@ -140,7 +149,7 @@ struct Generation
         }
         else if (node.kind == termKind::STRING)
         {
-            if (!stackDeclaration.back().empty())
+            if (!stackDeclaration.empty())
             {
                 std::string nombre = stackDeclaration.back();
                 stackDeclaration.pop_back();
@@ -156,7 +165,7 @@ struct Generation
             }
             else 
             {
-                std::string nombre = "stringBuffer";
+                std::string nombre = "bufferString";
                 size_t i{};
                 while (i<node.val.length())
                 {
@@ -166,6 +175,7 @@ struct Generation
                 }
                 out<<"    mov byte["<<nombre<<"+"<<node.val.length()<<"],0\n";
                 stackKind.push_back(Types::STRING_TYPE);
+                out<<"    push bufferString\n";
             }
         }
         else if (node.kind == termKind::VARIABLE)
@@ -251,6 +261,18 @@ struct Generation
         }
         else if (node.val == instructions::REASSIGN)
         {
+            auto tipo = mapVars.find(node.optional)->second;
+            if (tipo == varKind::INT_KIND)
+            {
+                node.node->accept(*this);
+                out<<"    pop rax\n";
+                out<<"    mov qword["<<node.optional<<"], rax\n";
+            }
+            else if (tipo == varKind::STRING_KIND)
+            {
+                stackDeclaration.push_back(node.optional);
+                node.node->accept(*this);
+            }
         }
         else if (node.val == instructions::PRINT)
         {
@@ -262,46 +284,46 @@ struct Generation
             {
                 int reservedId = ID_PRINT_NUM;
                 ID_PRINT_NUM+=1;
-                out<<"   pop rax\n";
+                out<<"    pop rax\n";
                 out<<"_printNumbers"<<reservedId<<":\n";
 
-                out<<"   mov rbx, 0\n";
-                out<<"   mov [buffer],rbx\n";
-                out<<"   \n";
-                out<<"   \n";
-                out<<"   mov rcx, 8\n";
-                out<<"   mov byte [buffer+rcx], 0\n";
+                out<<"    mov rbx, 0\n";
+                out<<"    mov [buffer],rbx\n";
+                out<<"    \n";
+                out<<"    \n";
+                out<<"    mov rcx, 8\n";
+                out<<"    mov byte [buffer+rcx], 0\n";
                 out<<"_printLoopNumbers"<<reservedId<<":\n";
-                out<<"   mov rdx, 0\n";
-                out<<"   mov rbx, 10\n";
-                out<<"   div rbx\n";
-                out<<"   mov rbx, rdx ;;aca posiblemente hay un error\n";
-                out<<"   add rbx, 48\n";
-                out<<"   dec rcx\n";
-                out<<"   mov byte [buffer+rcx],bl\n";
-                out<<"   cmp rax, 0\n";
-                out<<"   je _done"<<reservedId<<"\n";
-                out<<"   jmp _printLoopNumbers"<<reservedId<<"\n";
+                out<<"    mov rdx, 0\n";
+                out<<"    mov rbx, 10\n";
+                out<<"    div rbx\n";
+                out<<"    mov rbx, rdx ;;aca posiblemente hay un error\n";
+                out<<"    add rbx, 48\n";
+                out<<"    dec rcx\n";
+                out<<"    mov byte [buffer+rcx],bl\n";
+                out<<"    cmp rax, 0\n";
+                out<<"    je _done"<<reservedId<<"\n";
+                out<<"    jmp _printLoopNumbers"<<reservedId<<"\n";
                 out<<"_done"<<reservedId<<":\n";
-                out<<"   mov rax, buffer\n";
-                out<<"   add rax, rcx\n";
-                out<<"   push rax\n";
-                out<<"   \n";
-                out<<"   mov rax, 8\n";
-                out<<"   sub rax, rcx\n";
-                out<<"   mov rbx, rax\n";
-                out<<"   \n";
-                out<<"   mov rax, 1\n";
-                out<<"   mov rdi, 1\n";
-                out<<"   pop rsi\n";
-                out<<"   mov rdx, rbx\n";
-                out<<"   syscall\n";
-                out<<"   \n";
-                out<<"   mov rax, 1\n";
-                out<<"   mov rdi, 1\n";
-                out<<"   mov rsi, backN\n";
-                out<<"   mov rdx, 1\n";
-                out<<"   syscall\n";
+                out<<"    mov rax, buffer\n";
+                out<<"    add rax, rcx\n";
+                out<<"    push rax\n";
+                out<<"    \n";
+                out<<"    mov rax, 8\n";
+                out<<"    sub rax, rcx\n";
+                out<<"    mov rbx, rax\n";
+                out<<"    \n";
+                out<<"    mov rax, 1\n";
+                out<<"    mov rdi, 1\n";
+                out<<"    pop rsi\n";
+                out<<"    mov rdx, rbx\n";
+                out<<"    syscall\n";
+                out<<"    \n";
+                out<<"    mov rax, 1\n";
+                out<<"    mov rdi, 1\n";
+                out<<"    mov rsi, backN\n";
+                out<<"    mov rdx, 1\n";
+                out<<"    syscall\n";
 
 
             }
@@ -310,41 +332,106 @@ struct Generation
                 int reservedIdString = ID_PRINT_STRING;
                 ID_PRINT_STRING+=1;
 
-                out<<"   mov rbx, 0\n";
-                out<<"   mov rsi, [rsp]\n";
+                out<<"    mov rbx, 0\n";
+                out<<"    mov rsi, [rsp]\n";
                 out<<"_printString"<<reservedIdString<<":\n";
-                out<<"   cmp byte [rsi+rbx], 0\n";
-                out<<"   je _doneString"<<reservedIdString<<"\n";
-                out<<"   inc rbx\n";
-                out<<"   jmp _printString"<<reservedIdString<<"\n";
+                out<<"    cmp byte [rsi+rbx], 0\n";
+                out<<"    je _doneString"<<reservedIdString<<"\n";
+                out<<"    inc rbx\n";
+                out<<"    jmp _printString"<<reservedIdString<<"\n";
                 out<<"_doneString"<<reservedIdString<<":\n";
-                out<<"   mov rax, 1\n";
-                out<<"   mov rdi, 1\n";
-                out<<"   pop rsi\n";
-                out<<"   mov rdx, rbx\n";
-                out<<"   syscall\n";
-                out<<"   \n";
-                out<<"   mov rax, 1\n";
-                out<<"   mov rdi, 1\n";
-                out<<"   mov rsi, backN\n";
-                out<<"   mov rdx, 1\n";
-                out<<"   syscall\n";
+                out<<"    mov rax, 1\n";
+                out<<"    mov rdi, 1\n";
+                out<<"    pop rsi\n";
+                out<<"    mov rdx, rbx\n";
+                out<<"    syscall\n";
+                out<<"    \n";
+                out<<"    mov rax, 1\n";
+                out<<"    mov rdi, 1\n";
+                out<<"    mov rsi, backN\n";
+                out<<"    mov rdx, 1\n";
+                out<<"    syscall\n";
             }
-
         }
         else 
         {
+            throw std::logic_error("instruccion no encontrada.");
         }
     }
 
     void visit(ifNode &node) override
     {
+        int reservedIdLabel = ID_LABEL;
+        stackId.push_back(reservedIdLabel);
+        ID_LABEL+=1;
+        out<<"    _ifMethod"<<reservedIdLabel<<":\n";
+        node.cond->accept(*this);
+        node.block->accept(*this);
+        out<<"    jmp _endIf"<<ID_IF<<"\n";
+        out<<"_endLabel"<<reservedIdLabel<<":\n";
+
+        if (node.pred)
+        {
+            node.pred->accept(*this);
+        }
+        out<<"_endIf"<<ID_IF<<":\n";
+        ID_IF+=1;
     }
+
     void visit(conditionNode &node) override
     {
+        int reservedIdLabel =  stackId.back();
+        stackId.pop_back();
+        if (node.cond == conditionType::GREATER_THAN_CERO )
+        {
+            node.left->accept(*this);
+            out<<"    pop rbx\n";
+            out<<"    mov rdx, 0\n";
+            out<<"    cmp rbx, rdx\n";
+            out<<"    jng _endLabel"<<reservedIdLabel<<"\n";
+        }
+        else if (node.cond == conditionType::EQ_COND )
+        {
+            node.left->accept(*this);
+            node.right->accept(*this);
+            out<<"    pop rbx\n";
+            out<<"    pop rdx\n";
+            out<<"    cmp rbx, rdx\n";
+            out<<"    jne _endLabel"<<reservedIdLabel<<"\n";
+        }
+        else if (node.cond == conditionType::NEQ_COND )
+        {
+            node.left->accept(*this);
+            node.right->accept(*this);
+            out<<"    pop rbx\n";
+            out<<"    pop rdx\n";
+            out<<"    cmp rbx, rdx\n";
+            out<<"    je _endLabel"<<reservedIdLabel<<"\n";
+        }
+        else {throw std::logic_error("esto no deberia pasar");}
     }
+
     void visit(blockNode &node) override
     {
+        std::vector<std::unique_ptr<ASTNode>>& statements = node.statementsLocal; 
+        for (auto const &stats : statements)
+        {
+            stats->accept(*this);
+        }
+    }
+
+    void visit(whileNode &node) override
+    {
+        int reservedIdLabel = ID_LABEL;
+        stackId.push_back(reservedIdLabel);
+        ID_LABEL+=1; 
+        out<<"_whileMethod"<<ID_WHILE<<":\n";
+        node.cond->accept(*this);
+        node.block->accept(*this);
+        out<<"    jmp _whileMethod"<<ID_WHILE<<"\n";
+        out<<"_endLabel"<<reservedIdLabel<<":\n";
+
+        ID_WHILE+=1;
     }
 };
 
@@ -422,6 +509,11 @@ void conditionNode::accept(Visitor &visitor)
 }
 
 void blockNode::accept(Visitor &visitor)
+{
+    visitor.visit(*this);
+}
+
+void whileNode::accept(Visitor &visitor)
 {
     visitor.visit(*this);
 }

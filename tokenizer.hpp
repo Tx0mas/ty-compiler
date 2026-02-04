@@ -20,6 +20,7 @@ enum tokenType
     IF_TOKEN,
     ELIF_TOKEN,
     ELSE_TOKEN,
+    WHILE_TOKEN,
 
 
     EQ_TOKEN,
@@ -65,6 +66,7 @@ private:
         {"si", IF_TOKEN},
         {"ysi", ELIF_TOKEN},
         {"sino", ELSE_TOKEN},
+        {"mientras", WHILE_TOKEN},
 
 
     };
@@ -87,8 +89,8 @@ private:
         {'-', MINUS_TOKEN},
         {'(', LPAREN_TOKEN},
         {')', RPAREN_TOKEN},
-        {'}', LBRACE_TOKEN},
-        {'{', RBRACE_TOKEN},
+        {'}', RBRACE_TOKEN},
+        {'{', LBRACE_TOKEN},
 
     };
 

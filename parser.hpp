@@ -188,7 +188,7 @@ public:
     std::unique_ptr<ASTNode> parseCondition()
     {
         auto nodo1 = parseExpression();
-        if (peekToken() == RPAREN_TOKEN)
+        if (peekToken() == RPAREN_TOKEN) //esto quizas falla si agregamos && (or)
         {
             consume();
             return std::make_unique<conditionNode> (conditionType::GREATER_THAN_CERO, std::move(nodo1));
@@ -261,6 +261,16 @@ public:
 
     }
 
+    std::unique_ptr<ASTNode> parseWhile()
+    {
+        consume(); 
+        if (peekToken() != LPAREN_TOKEN){throw std::logic_error("luego de un while va (");}
+        consume();
+        auto cond = parseCondition();
+        auto block = parseBlock();
+        return std::make_unique<whileNode> (std::move(cond), std::move(block));
+    }
+
     std::unique_ptr<ASTNode> parseStatements()
     {
         if (peekToken() == DECLARATION_TOKEN)
@@ -270,6 +280,10 @@ public:
         else if (peekToken() == PRINT_TOKEN)
         {
             return parsePrint();
+        }
+        else if (peekToken() == WHILE_TOKEN)
+        {
+            return parseWhile();
         }
         else if (peekToken() == RETURN_TOKEN)
         {
