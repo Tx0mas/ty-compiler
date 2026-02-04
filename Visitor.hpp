@@ -8,6 +8,7 @@ struct Visitor
     virtual ~Visitor() = default;
     virtual void visit (termNode &node) = 0;
     virtual void visit (binaryOpNode &node) = 0;
+    virtual void visit (unaryOpNode &node) = 0;
     virtual void visit (varNode &node) = 0;
     virtual void visit (instructionNode &node) = 0;
     virtual void visit (ifNode &node) = 0;
@@ -35,6 +36,11 @@ struct SemanticAnalysis
     {
         node.left->accept(*this);
         node.right->accept(*this);
+    }
+
+    void visit (unaryOpNode &node) override
+    {
+        node.node->accept(*this);
     }
 
     void visit (varNode &node) override
@@ -224,7 +230,21 @@ struct Generation
             out<<"    div rbx\n";
             out<<"    push rax\n";
         }
+        else if (node.val == "%")
+        {
+            out<<"    mov rdx, 0\n";
+            out<<"    div rbx\n";
+            out<<"    push rdx\n";
+        }
         else {throw std::logic_error("error en binaryOpNode");}
+    }
+
+    void visit (unaryOpNode &node) override
+    {
+        node.node->accept(*this);
+        out<<"    pop rbx\n";
+        out<<"    neg rbx\n";
+        out<<"    push rbx\n";
     }
 
     void visit (varNode &node) override
@@ -266,7 +286,7 @@ struct Generation
             {
                 node.node->accept(*this);
                 out<<"    pop rax\n";
-                out<<"    mov qword["<<node.optional<<"], rax\n";
+                out<<"    mov qword ["<<node.optional<<"], rax\n";
             }
             else if (tipo == varKind::STRING_KIND)
             {
@@ -285,6 +305,21 @@ struct Generation
                 int reservedId = ID_PRINT_NUM;
                 ID_PRINT_NUM+=1;
                 out<<"    pop rax\n";
+
+                out<<"    cmp rax, 0\n";
+                out<<"    jge _printNumbers"<<reservedId<<"\n";
+
+                out<<"    mov [buffer], 45\n"; 
+                out<<"    neg rax\n";
+                out<<"    push rax\n";
+                out<<"    mov rax, 1\n";
+                out<<"    mov rdi, 1\n";
+                out<<"    mov rsi, buffer\n";
+                out<<"    mov rdx, 1\n";
+                out<<"    syscall\n";
+
+                out<<"    pop rax\n";
+
                 out<<"_printNumbers"<<reservedId<<":\n";
 
                 out<<"    mov rbx, 0\n";
@@ -405,8 +440,44 @@ struct Generation
             node.right->accept(*this);
             out<<"    pop rbx\n";
             out<<"    pop rdx\n";
-            out<<"    cmp rbx, rdx\n";
+            out<<"    cmp rdx, rbx\n";
             out<<"    je _endLabel"<<reservedIdLabel<<"\n";
+        }
+        else if (node.cond == conditionType::GREATER_COND )
+        {
+            node.left->accept(*this);
+            node.right->accept(*this);
+            out<<"    pop rbx\n";
+            out<<"    pop rdx\n";
+            out<<"    cmp rdx, rbx\n";
+            out<<"    jle _endLabel"<<reservedIdLabel<<"\n";
+        }
+        else if (node.cond == conditionType::NONGREATER_COND )
+        {
+            node.left->accept(*this);
+            node.right->accept(*this);
+            out<<"    pop rbx\n";
+            out<<"    pop rdx\n";
+            out<<"    cmp rdx, rbx\n";
+            out<<"    jge _endLabel"<<reservedIdLabel<<"\n";
+        }
+        else if (node.cond == conditionType::GREATEREQ_COND )
+        {
+            node.left->accept(*this);
+            node.right->accept(*this);
+            out<<"    pop rbx\n";
+            out<<"    pop rdx\n";
+            out<<"    cmp rdx, rbx\n";
+            out<<"    jl _endLabel"<<reservedIdLabel<<"\n";
+        }
+        else if (node.cond == conditionType::NONGREATEREQ_COND )
+        {
+            node.left->accept(*this);
+            node.right->accept(*this);
+            out<<"    pop rbx\n";
+            out<<"    pop rdx\n";
+            out<<"    cmp rdx, rbx\n";
+            out<<"    jg _endLabel"<<reservedIdLabel<<"\n";
         }
         else {throw std::logic_error("esto no deberia pasar");}
     }
@@ -488,6 +559,11 @@ void binaryOpNode::accept(Visitor &visitor)
     visitor.visit(*this);
 }
 
+void unaryOpNode::accept(Visitor &visitor)
+{
+    visitor.visit(*this);
+}
+
 void varNode::accept(Visitor &visitor)
 {
     visitor.visit(*this);
@@ -517,3 +593,4 @@ void whileNode::accept(Visitor &visitor)
 {
     visitor.visit(*this);
 }
+

@@ -45,7 +45,7 @@ public:
         {
             return {1,1.1};
         }
-        else if (op == "*" || op == "/")
+        else if (op == "*" || op == "/" || op == "%")
         {
             return {2,2.1};
         }
@@ -78,20 +78,41 @@ public:
             consume();
             return std::make_unique<termNode> (val,termKind::VARIABLE);
         }
+        else if (peekToken() == LPAREN_TOKEN)
+        {
+            consume();
+            auto nodo = parseExpression();
+            if (peekToken() != RPAREN_TOKEN) {throw std::logic_error("Te olvidaste de cerrar el parentesis");}
+            consume();
+            return nodo;
+        }
         throw std::logic_error("error en parseTerm");
     }
 
 
     std::unique_ptr<ASTNode> parseExpression(double actualBp = 0)
     {
-        auto nodo1 = parseTerm();
+        std::unique_ptr<ASTNode> nodo1;
+
+        if (peekToken() == MINUS_TOKEN)
+        {
+            consume();
+            auto nodo = parseExpression(3);
+            nodo1 = std::make_unique<unaryOpNode> ("-", std::move(nodo));
+        }
+        else 
+        {
+            nodo1 = parseTerm();
+        }
 
         while (true)
         {
             std::string operation = peekValToken();
 
             if (peekToken() == SEMICOLON_TOKEN || peekToken() == STRING_TOKEN || peekToken() == EQ_TOKEN 
-                    || peekToken()==NEQ_TOKEN || peekToken()==RPAREN_TOKEN)
+                    || peekToken()==NEQ_TOKEN || peekToken()==RPAREN_TOKEN || peekToken() == NONGREATEREQ_TOKEN
+                    || peekToken()==GREATEREQ_TOKEN || peekToken()==NONGREATEREQ_TOKEN || peekToken()==GREATER_TOKEN
+                    || peekToken()==NONGREATER_TOKEN)
             {
                 break;
             }
@@ -108,7 +129,6 @@ public:
 
         }
         return nodo1;
-
     }
 
     std::unique_ptr<ASTNode> parseVar()
@@ -200,6 +220,7 @@ public:
         if (peekToken() != RPAREN_TOKEN){throw std::logic_error("algo fallo en parseCondition");}
         consume();
 
+
         if (condicion == EQ_TOKEN)
         {
             return std::make_unique<conditionNode> (conditionType::EQ_COND, std::move(nodo1),std::move(nodo2));
@@ -207,6 +228,22 @@ public:
         else if (condicion == NEQ_TOKEN)
         {
             return std::make_unique<conditionNode> (conditionType::NEQ_COND, std::move(nodo1),std::move(nodo2));
+        }
+        else if (condicion == GREATEREQ_TOKEN)
+        {
+            return std::make_unique<conditionNode> (conditionType::GREATEREQ_COND, std::move(nodo1),std::move(nodo2));
+        }
+        else if (condicion == NONGREATEREQ_TOKEN)
+        {
+            return std::make_unique<conditionNode> (conditionType::NONGREATEREQ_COND, std::move(nodo1),std::move(nodo2));
+        }
+        else if (condicion == GREATER_TOKEN)
+        {
+            return std::make_unique<conditionNode> (conditionType::GREATER_COND, std::move(nodo1),std::move(nodo2));
+        }
+        else if (condicion == NONGREATER_TOKEN)
+        {
+            return std::make_unique<conditionNode> (conditionType::NONGREATER_COND, std::move(nodo1),std::move(nodo2));
         }
         else {throw std::logic_error("algo fallo en parseCondition");}
     }

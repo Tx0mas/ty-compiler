@@ -1,46 +1,32 @@
 dejar int algo = 1;
+dejar int ashe = 50;
 
-
-
-mientras(algo!=10)
+mientras (algo<=50)
 {
-    si (algo == 2)
+    si (algo%2 == 0)
     {
-        consola "Printeo el numero 2";
         consola algo;
-    }
-    ysi (algo == 3)
-    {
-        consola "Printeo el numero 3";
-        consola algo;
+        consola "Es par";
     }
     sino
     {
-        consola "Printeo otro";
         consola algo;
+        consola "Es impar";
     }
-    algo = algo+1;
+    algo=algo+1;
 }
 
-mientras(algo!=20)
+consola " ";
+consola " ";
+consola " ";
+
+mientras(ashe>=-2)
 {
-    si (algo == 11)
-    {
-        consola "Printeo el numero 11";
-        consola algo;
-    }
-    ysi (algo == 12)
-    {
-        consola "Printeo el numero 12";
-        consola algo;
-    }
-    sino
-    {
-        consola "Printeo otro";
-        consola algo;
-    }
-    algo = algo+1;
+    consola ashe;
+    ashe = ashe-1;
 }
+
+
 
 
 devuelva;

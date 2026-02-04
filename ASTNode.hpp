@@ -90,6 +90,22 @@ struct binaryOpNode
 
 };
 
+struct unaryOpNode
+:ASTNode
+{
+    std::string val{};
+    std::unique_ptr<ASTNode> node{};
+
+    unaryOpNode(std::string v, std::unique_ptr<ASTNode> n)
+    :val{v}, node{std::move(n)}
+    {}
+    void accept(Visitor &visitor) override;
+    std::string getVal() override
+    {
+        return val;
+    }
+};
+
 enum class termKind
 {
     INTEGER,
@@ -140,6 +156,10 @@ enum class conditionType
     EQ_COND,
     NEQ_COND,
     GREATER_THAN_CERO,
+    GREATEREQ_COND,
+    NONGREATEREQ_COND,
+    GREATER_COND,
+    NONGREATER_COND,
 
 };
 

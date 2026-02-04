@@ -25,6 +25,8 @@ enum tokenType
 
     EQ_TOKEN,
     NEQ_TOKEN,
+    GREATEREQ_TOKEN,
+    NONGREATEREQ_TOKEN,
 
 
     ASSIGN_TOKEN,
@@ -37,7 +39,9 @@ enum tokenType
     RPAREN_TOKEN,
     LBRACE_TOKEN,
     RBRACE_TOKEN,
-
+    GREATER_TOKEN,
+    NONGREATER_TOKEN,
+    REMAINDER_TOKEN,
 };
 
 struct Token
@@ -75,8 +79,8 @@ private:
     {
         {"==", EQ_TOKEN},
         {"!=", NEQ_TOKEN},
-
-
+        {">=", GREATEREQ_TOKEN},
+        {"<=", NONGREATEREQ_TOKEN},
     };
 
     std::unordered_map<char, tokenType> m_mapSimbols
@@ -91,6 +95,9 @@ private:
         {')', RPAREN_TOKEN},
         {'}', RBRACE_TOKEN},
         {'{', LBRACE_TOKEN},
+        {'>', GREATER_TOKEN},
+        {'<', NONGREATER_TOKEN},
+        {'%', REMAINDER_TOKEN},
 
     };
 
