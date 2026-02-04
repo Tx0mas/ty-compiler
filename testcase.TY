@@ -1,5 +1,7 @@
 dejar int algo = 1;
-dejar int ashe = 50;
+dejar int variable = 25;
+dejar int newvar = 3*3/3;
+dejar str string = "este es un string larguisimo!!!!";
 
 mientras (algo<=50)
 {
@@ -18,12 +20,15 @@ mientras (algo<=50)
 
 consola " ";
 consola " ";
+consola newvar;
+consola string;
+consola " ";
 consola " ";
 
-mientras(ashe>=-2)
+mientras(variable>=-25)
 {
-    consola ashe;
-    ashe = ashe-1;
+    consola variable;
+    variable = variable-1;
 }
 
 

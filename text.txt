@@ -1,9 +1,0 @@
-section .bss
-    variable resb 16
-    str resb 32
-
-section .text
-    global _start
-
-_start:
-    

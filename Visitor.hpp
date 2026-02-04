@@ -122,6 +122,7 @@ struct Generation
     Generation(std::unordered_map<std::string,varKind> m)
     :mapVars{m}
     {
+        out<<"DEFAULT REL\n";
         out<<"section .text\n";
         out<<"     backN db 10\n";
 
