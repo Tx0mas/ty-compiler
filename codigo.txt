@@ -1,0 +1,7 @@
+dejar int algo = 3*3/3+1/2*4-1;
+dejar str ashe = "hola amiguitos";
+
+consola algo;
+consola ashe;
+
+devuelva;
