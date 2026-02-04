@@ -10,23 +10,37 @@ struct ASTNode
 {
     virtual ~ASTNode() = default;
     virtual void accept(Visitor &visitor) = 0;
+    virtual std::string getVal() = 0;
 };
 
+enum class instructions
+{
+    REASSIGN,
+    DECLARATION,
+    PRINT,
+    RETURN,
+
+};
 
 struct instructionNode
 :ASTNode
 {
-    std::string val{};
+    instructions val{};
+    std::string optional{};
     std::unique_ptr<ASTNode> node{};
 
-    instructionNode(std::string v, std::unique_ptr<ASTNode> n)
-    :val{v}, node{std::move(n)}
-    {}
 
-    instructionNode(std::string v)
-    :val{v}, node{std::move(nullptr)}
+    instructionNode(instructions v, std::string o, std::unique_ptr<ASTNode> n)
+    :val{v},optional{o}, node{std::move(n)}
+    {}
+    instructionNode(instructions v, std::unique_ptr<ASTNode> n)
+    :val{v}, optional{"NULL"}, node{std::move(n)}
+    {}
+    instructionNode(instructions v)
+    :val{v},optional{"NULL"}, node{std::move(nullptr)}
     {}
     void accept(Visitor &visitor) override;
+    std::string getVal() override {return "'";}
 };
 
 enum class varKind
@@ -50,6 +64,10 @@ struct varNode
     {}
 
     void accept(Visitor &visitor) override;
+    std::string getVal() override
+    {
+        return val;
+    }
 };
 
 struct binaryOpNode
@@ -63,6 +81,12 @@ struct binaryOpNode
     :val{v},left{std::move(l)},right{std::move(r)}
     {}
     void accept(Visitor &visitor) override;
+
+    std::string getVal() override
+    {
+        return val;
+    }
+
 };
 
 enum class termKind
@@ -83,6 +107,11 @@ struct termNode
     :val{v}, kind{k}
     {}
     void accept(Visitor &visitor) override;
+
+    std::string getVal() override
+    {
+        return val;
+    }
 };
 
 

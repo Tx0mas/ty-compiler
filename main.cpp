@@ -14,8 +14,10 @@ int main()
     Parser parseThis{t};
     parseThis.globalParse();
     auto s = parseThis.getStatements();
-    printStatements(s);
+    //printStatements(s);
 
+
+    analyseAndGenerate(s);
 
 
 

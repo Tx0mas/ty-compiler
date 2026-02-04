@@ -142,6 +142,7 @@ public:
                 return std::make_unique<varNode> (nombre, varKind::INT_KIND);
             }
         }
+        else {throw std::logic_error("error en parseVar");}
     }
 
     std::unique_ptr<ASTNode> parseDeclaration()
@@ -150,7 +151,7 @@ public:
         if (peekToken() == STR_TYPE_TOKEN || peekToken() == INT_TYPE_TOKEN)
         {
             auto nodo = parseVar();
-            return std::make_unique<instructionNode> ("DECLARATION", std::move(nodo));
+            return std::make_unique<instructionNode> (instructions::DECLARATION, std::move(nodo));
         }
         throw std::logic_error("las variables declaradas deben llevar su tipo.");
     }
@@ -159,13 +160,24 @@ public:
     {
         consume();
         auto nodo = parseExpression();
-        return std::make_unique<instructionNode> ("PRINT", std::move(nodo));
+        return std::make_unique<instructionNode> (instructions::PRINT, std::move(nodo));
     }
 
     std::unique_ptr<ASTNode> parseReturn()
     {
         consume();
-        return std::make_unique<instructionNode> ("RETURN");
+        return std::make_unique<instructionNode> (instructions::RETURN);
+    }
+    std::unique_ptr<ASTNode> parseReassign()
+    {
+        std::string nombre = peekValToken();
+        consume();
+        if (peekToken()!=ASSIGN_TOKEN){throw std::logic_error("luego de un IDENTIFIER_TOKEN al principio va un assign");}
+        consume();
+        auto nodo = parseExpression();
+
+        return std::make_unique<instructionNode> (instructions::REASSIGN,nombre, std::move(nodo));
+
     }
 
     std::unique_ptr<ASTNode> parseStatements()
@@ -181,6 +193,10 @@ public:
         else if (peekToken() == RETURN_TOKEN)
         {
             return parseReturn();
+        }
+        else if (peekToken() == IDENTIFIER_TOKEN)
+        {
+            return parseReassign();
         }
         else{ throw std::logic_error("error en parseStatements.");}
     }

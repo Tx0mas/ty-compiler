@@ -1,7 +1,5 @@
-dejar int algo = 3*3/3+1/2*4-1;
-dejar str ashe = "hola amiguitos";
+dejar int algo = 2*2/2+2-1+6/2;
 
 consola algo;
-consola ashe;
 
 devuelva;
