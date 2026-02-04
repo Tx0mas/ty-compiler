@@ -17,6 +17,9 @@ enum tokenType
     NUM_TOKEN,
     PRINT_TOKEN,
     RETURN_TOKEN,
+    IF_TOKEN,
+    ELIF_TOKEN,
+    ELSE_TOKEN,
 
 
     EQ_TOKEN,
@@ -29,8 +32,10 @@ enum tokenType
     MUL_TOKEN,
     DIV_TOKEN,
     MINUS_TOKEN,
-
-
+    LPAREN_TOKEN,
+    RPAREN_TOKEN,
+    LBRACE_TOKEN,
+    RBRACE_TOKEN,
 
 };
 
@@ -57,6 +62,9 @@ private:
         {"consola", PRINT_TOKEN},
         {"devuelva", RETURN_TOKEN},
         {"str", STR_TYPE_TOKEN},
+        {"si", IF_TOKEN},
+        {"ysi", ELIF_TOKEN},
+        {"sino", ELSE_TOKEN},
 
 
     };
@@ -77,7 +85,10 @@ private:
         {'*', MUL_TOKEN},
         {'/', DIV_TOKEN},
         {'-', MINUS_TOKEN},
-
+        {'(', LPAREN_TOKEN},
+        {')', RPAREN_TOKEN},
+        {'}', LBRACE_TOKEN},
+        {'{', RBRACE_TOKEN},
 
     };
 

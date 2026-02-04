@@ -90,7 +90,8 @@ public:
         {
             std::string operation = peekValToken();
 
-            if (peekToken() == SEMICOLON_TOKEN || peekToken() == STRING_TOKEN)
+            if (peekToken() == SEMICOLON_TOKEN || peekToken() == STRING_TOKEN || peekToken() == EQ_TOKEN 
+                    || peekToken()==NEQ_TOKEN || peekToken()==RPAREN_TOKEN)
             {
                 break;
             }
@@ -180,6 +181,86 @@ public:
 
     }
 
+
+
+
+
+    std::unique_ptr<ASTNode> parseCondition()
+    {
+        auto nodo1 = parseExpression();
+        if (peekToken() == RPAREN_TOKEN)
+        {
+            consume();
+            return std::make_unique<conditionNode> (conditionType::GREATER_THAN_CERO, std::move(nodo1));
+        }
+        auto condicion = peekToken();
+        consume();
+        auto nodo2 = parseExpression(); 
+
+        if (peekToken() != RPAREN_TOKEN){throw std::logic_error("algo fallo en parseCondition");}
+        consume();
+
+        if (condicion == EQ_TOKEN)
+        {
+            return std::make_unique<conditionNode> (conditionType::EQ_COND, std::move(nodo1),std::move(nodo2));
+        }
+        else if (condicion == NEQ_TOKEN)
+        {
+            return std::make_unique<conditionNode> (conditionType::NEQ_COND, std::move(nodo1),std::move(nodo2));
+        }
+        else {throw std::logic_error("algo fallo en parseCondition");}
+    }
+
+    std::unique_ptr<ASTNode> parseBlock()
+    {
+        if (peekToken()!=LBRACE_TOKEN){throw std::logic_error("error parseBlock");}
+        consume();
+        std::vector<std::unique_ptr<ASTNode>> stats{};
+
+        while (peekToken() != RBRACE_TOKEN && m_pos<m_vecTokens.size())
+        {
+            if (peekToken() == SEMICOLON_TOKEN || peekToken() == EOF_TOKEN)
+            {
+                consume();
+                continue;
+            }
+            stats.push_back(parseStatements());
+        }
+
+        if (peekToken()!=RBRACE_TOKEN){throw std::logic_error("error parseBlock");}
+        consume();
+
+        return std::make_unique<blockNode> (std::move(stats));
+    }
+
+    std::unique_ptr<ASTNode> parseIf()
+    {
+        if (peekToken() == ELSE_TOKEN)
+        {
+            consume();
+            auto nodo = parseBlock();
+            return std::make_unique<instructionNode> (instructions::EJECUTAR, std::move(nodo));
+        }
+
+        consume();
+        if (peekToken() != LPAREN_TOKEN){throw std::logic_error("Luego de un if o elif va un (");}
+        consume();
+        auto cond = parseCondition();
+        auto bloque = parseBlock();
+
+        if (peekToken() == ELSE_TOKEN || peekToken() == ELIF_TOKEN)
+        {
+            auto predicado = parseIf();
+            return std::make_unique<ifNode> (std::move(cond), std::move(bloque), std::move(predicado));
+        }
+        else 
+        {
+            return std::make_unique<ifNode> (std::move(cond), std::move(bloque));
+        }
+
+
+    }
+
     std::unique_ptr<ASTNode> parseStatements()
     {
         if (peekToken() == DECLARATION_TOKEN)
@@ -198,6 +279,11 @@ public:
         {
             return parseReassign();
         }
+        else if (peekToken() == IF_TOKEN)
+        {
+            return parseIf();
+        }
+ 
         else{ throw std::logic_error("error en parseStatements.");}
     }
 

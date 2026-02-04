@@ -19,6 +19,7 @@ enum class instructions
     DECLARATION,
     PRINT,
     RETURN,
+    EJECUTAR,
 
 };
 
@@ -113,6 +114,68 @@ struct termNode
         return val;
     }
 };
+
+struct ifNode
+:ASTNode
+{
+    std::unique_ptr<ASTNode> cond{};
+    std::unique_ptr<ASTNode> block{};
+    std::unique_ptr<ASTNode> pred{};
+
+    ifNode(std::unique_ptr<ASTNode> c, std::unique_ptr<ASTNode> b, std::unique_ptr<ASTNode> p)
+    :cond{std::move(c)},block{std::move(b)}, pred{std::move(p)}
+    {}
+
+    ifNode(std::unique_ptr<ASTNode> c, std::unique_ptr<ASTNode> b)
+    :cond{std::move(c)},block{std::move(b)},pred{std::move(nullptr)}
+    {}
+
+    void accept(Visitor &visitor) override;
+    std::string getVal() override {return "'";}
+
+};
+
+enum class conditionType
+{
+    EQ_COND,
+    NEQ_COND,
+    GREATER_THAN_CERO,
+
+};
+
+struct conditionNode
+:ASTNode
+{
+    conditionType cond{};
+    std::unique_ptr<ASTNode> left{};
+    std::unique_ptr<ASTNode> right{};
+
+    conditionNode(conditionType c, std::unique_ptr<ASTNode> l, std::unique_ptr<ASTNode> r)
+    :cond{c}, left{std::move(l)}, right{std::move(r)}
+    {}
+
+    conditionNode(conditionType c, std::unique_ptr<ASTNode> l)
+    :cond{c}, left{std::move(l)}, right{std::move(nullptr)}
+    {}
+
+    void accept(Visitor &visitor) override;
+    std::string getVal() override {return "'";}
+
+};
+
+
+struct blockNode
+:ASTNode
+{
+    std::vector<std::unique_ptr<ASTNode>> statementsLocal{};
+
+    blockNode(std::vector<std::unique_ptr<ASTNode>> stats)
+    :statementsLocal{std::move(stats)}
+    {}
+    void accept(Visitor &visitor) override;
+    std::string getVal() override {return "'";}
+};
+
 
 
 

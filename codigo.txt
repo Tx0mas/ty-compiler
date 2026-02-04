@@ -1,5 +1,11 @@
-dejar int algo = 2*2/2+2-1+6/2;
+dejar int algo = 2*2/2+6/2-1;
+dejar str peda = "hola amigos que pasa pa";
+dejar str nano = "soy un peda";
+dejar int asd = 3*3/3-1;
 
 consola algo;
+consola peda;
+consola nano;
+consola asd;
 
 devuelva;

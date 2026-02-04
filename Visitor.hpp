@@ -10,39 +10,9 @@ struct Visitor
     virtual void visit (binaryOpNode &node) = 0;
     virtual void visit (varNode &node) = 0;
     virtual void visit (instructionNode &node) = 0;
-};
-
-struct PrintVisitor
-:Visitor
-{
-
-    void visit (termNode &node) override
-    {
-        std::cout<<node.val;
-    }
-    void visit (binaryOpNode &node) override
-    {
-        std::cout<<"(";
-        node.left->accept(*this);
-        std::cout<<node.val;
-        node.right->accept(*this);
-        std::cout<<")";
-    }
-    void visit (varNode &node) override
-    {
-        std::cout<<node.val<<'\n';
-        node.node->accept(*this);
-    }
-    void visit (instructionNode &node) override
-    {
-        if (node.val == instructions::RETURN)
-        {
-        }
-        else 
-        {
-            node.node->accept(*this);
-        }
-    }
+    virtual void visit (ifNode &node) = 0;
+    virtual void visit (conditionNode &node) = 0;
+    virtual void visit (blockNode &node) = 0;
 };
 
 
@@ -98,6 +68,16 @@ struct SemanticAnalysis
             node.node->accept(*this);
         }
     }
+    
+    void visit(ifNode &node) override
+    {
+    }
+    void visit(conditionNode &node) override
+    {
+    }
+    void visit(blockNode &node) override
+    {
+    }
 
     std::unordered_map<std::string, varKind> getMap()
     {
@@ -118,6 +98,7 @@ struct Generation
 :Visitor
 {
     int ID_PRINT_NUM{1};
+    int ID_PRINT_STRING{1};
 
     std::vector<Types> stackKind{};
     std::vector<std::string> stackDeclaration{};
@@ -166,7 +147,7 @@ struct Generation
                 size_t i{};
                 while (i<node.val.length())
                 {
-                    out<<"    mov rax, "<<node.val.substr(i,8)<<'\n';
+                    out<<"    mov rax, "<<'"'<<node.val.substr(i,8)<<'"'<<'\n';
                     out<<"    mov qword ["<<nombre<<"+"<<i<<"]"<<", rax"<<'\n';
                     i+=8;
                 }
@@ -179,7 +160,7 @@ struct Generation
                 size_t i{};
                 while (i<node.val.length())
                 {
-                    out<<"    mov rax, "<<node.val.substr(i,8)<<'\n';
+                    out<<"    mov rax, "<<'"'<<node.val.substr(i,8)<<'"'<<'\n';
                     out<<"    mov qword ["<<nombre<<"+"<<i<<"]"<<", rax"<<'\n';
                     i+=8;
                 }
@@ -252,7 +233,7 @@ struct Generation
         }
     }
 
-    void visit (instructionNode &node) override
+    void visit (instructionNode &node) override  //agregar las otras instrucions
     {
         if (node.val == instructions::RETURN)
         {
@@ -260,9 +241,16 @@ struct Generation
             out<<"    mov rdi, 0\n";
             out<<"    syscall\n";
         }
+        else if (node.val == instructions::EJECUTAR)
+        {
+            node.node->accept(*this);
+        }
         else if (node.val == instructions::DECLARATION)
         {
             node.node->accept(*this);
+        }
+        else if (node.val == instructions::REASSIGN)
+        {
         }
         else if (node.val == instructions::PRINT)
         {
@@ -317,14 +305,46 @@ struct Generation
 
 
             }
+            if (tipo == Types::STRING_TYPE)
+            {
+                int reservedIdString = ID_PRINT_STRING;
+                ID_PRINT_STRING+=1;
 
-        }
-        else if (node.val == instructions::REASSIGN)
-        {
+                out<<"   mov rbx, 0\n";
+                out<<"   mov rsi, [rsp]\n";
+                out<<"_printString"<<reservedIdString<<":\n";
+                out<<"   cmp byte [rsi+rbx], 0\n";
+                out<<"   je _doneString"<<reservedIdString<<"\n";
+                out<<"   inc rbx\n";
+                out<<"   jmp _printString"<<reservedIdString<<"\n";
+                out<<"_doneString"<<reservedIdString<<":\n";
+                out<<"   mov rax, 1\n";
+                out<<"   mov rdi, 1\n";
+                out<<"   pop rsi\n";
+                out<<"   mov rdx, rbx\n";
+                out<<"   syscall\n";
+                out<<"   \n";
+                out<<"   mov rax, 1\n";
+                out<<"   mov rdi, 1\n";
+                out<<"   mov rsi, backN\n";
+                out<<"   mov rdx, 1\n";
+                out<<"   syscall\n";
+            }
+
         }
         else 
         {
         }
+    }
+
+    void visit(ifNode &node) override
+    {
+    }
+    void visit(conditionNode &node) override
+    {
+    }
+    void visit(blockNode &node) override
+    {
     }
 };
 
@@ -369,17 +389,6 @@ void analyseAndGenerate(std::vector<std::unique_ptr<ASTNode>> &statements)
 
 
 
-void printStatements(std::vector<std::unique_ptr<ASTNode>> &statements)
-{
-    PrintVisitor printThis{};
-
-    for (auto const &stats : statements)
-    {
-        stats->accept(printThis);
-    }
-}
-
-
 
 
 void termNode::accept(Visitor &visitor)
@@ -402,3 +411,17 @@ void instructionNode::accept(Visitor &visitor)
     visitor.visit(*this);
 }
 
+void ifNode::accept(Visitor &visitor)
+{
+    visitor.visit(*this);
+}
+
+void conditionNode::accept(Visitor &visitor)
+{
+    visitor.visit(*this);
+}
+
+void blockNode::accept(Visitor &visitor)
+{
+    visitor.visit(*this);
+}

@@ -2,54 +2,33 @@ section .bss
     buffer resb 16
 
 section .data
-    variable db 123
+    variable db "Hola amigos este string es larguisimo",0
 
 section .text
     global _start
 
 _start:
-    mov rax, [variable]
+    mov rax, variable
     push rax
 
-    pop rax
-_printNumbers:
     mov rbx, 0
-    mov [buffer],rbx
-
-
-    mov rcx, 8
-    mov byte [buffer+rcx], 0
-_printLoopNumbers:
-    mov rdx, 0
-    mov rbx, 10
-    div rbx
-    mov rbx, rdx ;;aca posiblemente hay un error
-    add rbx, 48
-    dec rcx
-    mov byte [buffer+rcx],bl
-    cmp rax, 0
-    je _done
-    jmp _printLoopNumbers
-_done:
-    mov rax, buffer
-    add rax, rcx
-    push rax
-
-    mov rax, 8
-    sub rax, rcx
-    mov rbx, rax
-
+    mov rsi, [rsp]
+_printString:
+    cmp byte [rsi+rbx], 0
+    je _doneString
+    inc rbx
+    jmp _printString
+_doneString: 
     mov rax, 1
     mov rdi, 1
     pop rsi
     mov rdx, rbx
     syscall
 
-
     mov rax, 60
     mov rdi, 0
     syscall
-
+     
     
 
     

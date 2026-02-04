@@ -3,6 +3,9 @@ section .text
 section .bss
      bufferString resb 64
      buffer resb 16
+    asd resb 8
+    nano resb 64
+    peda resb 64
     algo resb 8
 section .text
     global _start
@@ -22,18 +25,6 @@ _start:
     mov rdx, 0
     div rbx
     push rax
-    mov rax, 2
-    push rax
-    pop rbx
-    pop rax
-    add rax, rbx
-    push rax
-    mov rax, 1
-    push rax
-    pop rbx
-    pop rax
-    sub rax, rbx
-    push rax
     mov rax, 6
     push rax
     mov rax, 2
@@ -47,8 +38,49 @@ _start:
     pop rax
     add rax, rbx
     push rax
+    mov rax, 1
+    push rax
+    pop rbx
+    pop rax
+    sub rax, rbx
+    push rax
     pop rax
     mov qword[algo], rax
+    mov rax, "hola ami"
+    mov qword [peda+0], rax
+    mov rax, "gos que "
+    mov qword [peda+8], rax
+    mov rax, "pasa pa"
+    mov qword [peda+16], rax
+    mov byte[peda+23],0
+    mov rax, "soy un p"
+    mov qword [nano+0], rax
+    mov rax, "eda"
+    mov qword [nano+8], rax
+    mov byte[nano+11],0
+    mov rax, 3
+    push rax
+    mov rax, 3
+    push rax
+    pop rbx
+    pop rax
+    mul rbx
+    push rax
+    mov rax, 3
+    push rax
+    pop rbx
+    pop rax
+    mov rdx, 0
+    div rbx
+    push rax
+    mov rax, 1
+    push rax
+    pop rbx
+    pop rax
+    sub rax, rbx
+    push rax
+    pop rax
+    mov qword[asd], rax
     mov rax, [algo]
     push rax
    pop rax
@@ -71,6 +103,89 @@ _printLoopNumbers1:
    je _done1
    jmp _printLoopNumbers1
 _done1:
+   mov rax, buffer
+   add rax, rcx
+   push rax
+   
+   mov rax, 8
+   sub rax, rcx
+   mov rbx, rax
+   
+   mov rax, 1
+   mov rdi, 1
+   pop rsi
+   mov rdx, rbx
+   syscall
+   
+   mov rax, 1
+   mov rdi, 1
+   mov rsi, backN
+   mov rdx, 1
+   syscall
+    mov rax, peda
+    push rax
+   mov rbx, 0
+   mov rsi, [rsp]
+_printString1:
+   cmp byte [rsi+rbx], 0
+   je _doneString1
+   inc rbx
+   jmp _printString1
+_doneString1:
+   mov rax, 1
+   mov rdi, 1
+   pop rsi
+   mov rdx, rbx
+   syscall
+   
+   mov rax, 1
+   mov rdi, 1
+   mov rsi, backN
+   mov rdx, 1
+   syscall
+    mov rax, nano
+    push rax
+   mov rbx, 0
+   mov rsi, [rsp]
+_printString2:
+   cmp byte [rsi+rbx], 0
+   je _doneString2
+   inc rbx
+   jmp _printString2
+_doneString2:
+   mov rax, 1
+   mov rdi, 1
+   pop rsi
+   mov rdx, rbx
+   syscall
+   
+   mov rax, 1
+   mov rdi, 1
+   mov rsi, backN
+   mov rdx, 1
+   syscall
+    mov rax, [asd]
+    push rax
+   pop rax
+_printNumbers2:
+   mov rbx, 0
+   mov [buffer],rbx
+   
+   
+   mov rcx, 8
+   mov byte [buffer+rcx], 0
+_printLoopNumbers2:
+   mov rdx, 0
+   mov rbx, 10
+   div rbx
+   mov rbx, rdx ;;aca posiblemente hay un error
+   add rbx, 48
+   dec rcx
+   mov byte [buffer+rcx],bl
+   cmp rax, 0
+   je _done2
+   jmp _printLoopNumbers2
+_done2:
    mov rax, buffer
    add rax, rcx
    push rax
