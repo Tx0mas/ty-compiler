@@ -21,7 +21,7 @@ y otras mas..
 
 ## Dependencias
 
-x86 Linux, ld, gcc y NASM.
+x86-64 Linux, ld, gcc y NASM.
 
 ## Construccion
 
