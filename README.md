@@ -25,8 +25,6 @@ x86-64 Linux, ld, gcc y NASM.
 
 ## Construccion
 
-Aun no se agregó CMake, por ahora utilizar gcc compiler para main
-
 ```
 g++ -std=c++17 main.cpp -o ./ty
 
