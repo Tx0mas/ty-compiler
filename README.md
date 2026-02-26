@@ -1,11 +1,11 @@
 # TY (ty-compiler)
 
 Este es un compiler experimental el cual compila un lenguaje de programacion con sintaxis en español. 
-La idea de ty-compiler es que es un compilador diseñado para que cualquier persona hispanohablante pueda programar sin necesidad de aprender inglés primero. A diferencia de otros lenguajes educativos, ty-compiler está optimizado para la velocidad, traduciendo el código directamente a Assembly (ASM).
+La idea de ty-compiler es que es un compilador diseñado para que cualquier persona hispanohablante pueda programar sin necesidad de aprender inglés primero.
 
 ---
 
-El compiler esta escrito en C++ aun no es self-hosted.
+El compiler esta escrito en C++, no es self-hosted.
 
 ## Sintaxis
 
